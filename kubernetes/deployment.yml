@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-authorizer
+spec:
+  selector:
+    matchLabels:
+      app: oauth2-authorizer
+  template:
+    metadata:
+      labels:
+        app: oauth2-authorizer
+    spec:
+      containers:
+      - name: oauth2-authorizer
+        image: registry.viarezo.fr/oauth2-authorizer/oauth2-authorizer:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env:
+          - name: REDIRECT_URI
+            value: https://traefik.viarezo.fr
+          - name: CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: oauth2-authorizer
+                key: client-id
+          - name: CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: oauth2-authorizer
+                key: client-secret

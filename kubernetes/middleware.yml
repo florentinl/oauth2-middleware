@@ -1,0 +1,8 @@
+# Forward authentication to example.com
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: oauth2-forwarder
+spec:
+  forwardAuth:
+    address: http://oauth2-authorizer.oauth2-authorizer.svc
