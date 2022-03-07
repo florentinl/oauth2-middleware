@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -22,13 +23,18 @@ var clientSecret string
 
 var grantType = "authorization_code"
 var responseType = "code"
-var sessions = make(map[int]string)
+var sessions = make(map[int]*Session)
 var scope = "default"
 
 var redirectUri string
 var authTokenUri = "https://auth.viarezo.fr/oauth/token"
 var authAPIUri = "https://auth.viarezo.fr/api/user/show/me"
 var authAuthorizeUri = "https://auth.viarezo.fr/oauth/authorize"
+
+type Session struct {
+	state     string
+	connected bool
+}
 
 type Token struct {
 	AccessToken  string `json:"access_token,omitempty"`
@@ -71,11 +77,15 @@ func getId() int {
 func redirectAuth(w http.ResponseWriter, r *http.Request) {
 	state := generateState()
 	id := getId()
-	sessions[id] = state
+	sessions[id] = &Session{
+		state:     state,
+		connected: false,
+	}
 
 	cookie := &http.Cookie{
-		Name:  "id",
-		Value: fmt.Sprint(id),
+		Name:   "id",
+		Value:  fmt.Sprint(id),
+		MaxAge: 1200,
 	}
 	http.SetCookie(w, cookie)
 
@@ -86,10 +96,12 @@ func redirectAuth(w http.ResponseWriter, r *http.Request) {
 	parameters.Add("state", state)
 	parameters.Add("scope", scope)
 
+	fmt.Println("  Redirected user")
 	http.Redirect(w, r, authAuthorizeUri+"?"+parameters.Encode(), 302)
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Request received:")
 	if r.URL.Path != "/" {
 		http.Error(w, "404 not found.", http.StatusNotFound)
 		return
@@ -98,20 +110,51 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "400 bad request.", http.StatusBadRequest)
 		return
 	}
+	uri, ok := r.Header["X-Forwarded-Uri"]
+	if !ok {
+		log.Fatal(ok)
+	}
+	forwardedUri, err := url.Parse(uri[0])
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	query := r.URL.Query()
+	query := forwardedUri.Query()
 	codeArray, hasCode := query["code"]
 	stateArray, hasState := query["state"]
 
+	id, cookieErr := r.Cookie("id")
+	if !errors.Is(cookieErr, http.ErrNoCookie) && cookieErr != nil {
+		log.Fatal(cookieErr)
+	}
+	var hasCookie bool
+	var connected bool
+	var intId int
+	if errors.Is(cookieErr, http.ErrNoCookie) {
+		hasCookie = false
+		connected = false
+	} else {
+		fmt.Println("Get cookie")
+		hasCookie = true
+		intId, err = strconv.Atoi(id.Value)
+		if err != nil {
+			log.Fatal(err)
+		}
+		connected = sessions[intId].connected
+	}
+	fmt.Println("cookie passed")
+	if hasCookie && connected {
+		fmt.Fprintf(w, "Hello !\n")
+		return
+	}
+
 	if len(query) == 0 {
+		fmt.Println("  About to redirect")
 		redirectAuth(w, r)
 		return
 	}
-	if hasCode && hasState {
-		id, cookieErr := r.Cookie("id")
-		if cookieErr != nil {
-			log.Fatal(cookieErr)
-		}
+	if hasCode && hasState && hasCookie {
+		fmt.Println("  Received code")
 		name, ok := checkIdentity(codeArray[0], stateArray[0], id.Value)
 		if ok {
 			fmt.Fprintf(w, "Hello %s!\n", name)
@@ -126,14 +169,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func checkIdentity(code, state, id string) (string, bool) {
 	intId, _ := strconv.Atoi(id)
-	if state != sessions[intId] {
+	if state != sessions[intId].state {
+		fmt.Println("  None matching states")
 		return "", false
 	}
 	token, ok := getTokens(code)
 	if !ok {
+		fmt.Println("  Token error")
 		return "", false
 	}
-	delete(sessions, intId)
+	fmt.Println("  Validate user")
+	sessions[intId].connected = true
 	name := getUsername(token.AccessToken)
 	return name, true
 }
