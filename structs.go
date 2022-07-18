@@ -13,6 +13,7 @@ type Oauth2Config struct {
 	AuthAuthorizeUri string
 	AuthAPIUri       string
 	LogoutUri        string
+	StateMap         map[string]string
 }
 
 // Tokens for a user

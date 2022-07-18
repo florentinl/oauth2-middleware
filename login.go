@@ -11,10 +11,16 @@ func (config Oauth2Config) login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	stateID, err := RandString(24)
+	if err != nil {
+		log.Fatal(err)
+	}
+	config.StateMap[stateID] = state
+
 	cookie := &http.Cookie{
 		Name:     "state",
 		Path:     "/",
-		Value:    state,
+		Value:    stateID,
 		MaxAge:   1200,
 		HttpOnly: true,
 		Secure:   true,

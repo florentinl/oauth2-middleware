@@ -30,6 +30,7 @@ func main() {
 		AuthAuthorizeUri: "https://auth.viarezo.fr/oauth/authorize",
 		AuthAPIUri:       "https://auth.viarezo.fr/api/user/show/me",
 		LogoutUri:        "https://auth.viarezo.fr/logout",
+		StateMap:         map[string]string{},
 	}
 	http.HandleFunc("/_auth/login", config.login)
 	http.HandleFunc("/_auth/callback", config.callback)

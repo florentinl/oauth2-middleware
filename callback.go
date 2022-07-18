@@ -8,16 +8,18 @@ import (
 	"net/url"
 )
 
-func checkState(r *http.Request) error {
+func (config Oauth2Config) checkState(r *http.Request) error {
 	state := r.FormValue("state")
 	cookie, err := r.Cookie("state")
 	if err != nil {
 		return err
 	}
-
-	if state != cookie.Value {
+	stateID := cookie.Value
+	state = config.StateMap[stateID]
+	if state != r.FormValue("state") || state == "" {
 		return errors.New("Mismatching states")
 	}
+	delete(config.StateMap, stateID)
 	return nil
 }
 
@@ -71,17 +73,19 @@ func (config Oauth2Config) getUser(token Tokens) (User, error) {
 }
 
 func (config Oauth2Config) callback(w http.ResponseWriter, r *http.Request) {
-	err := checkState(r)
+	err := config.checkState(r)
 	if errors.Is(err, http.ErrNoCookie) {
 		http.Redirect(w, r, "/_auth/login", 302)
 		return
 	} else if errors.Is(err, errors.New("Mismatching states")) {
+		clearStateCookie(w)
 		http.Error(w, "Mismatching states", http.StatusBadRequest)
 		return
 	} else if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+	clearStateCookie(w)
 
 	tokens, err := config.getTokens(r.FormValue("code"))
 	if err != nil {
