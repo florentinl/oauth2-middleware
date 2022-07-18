@@ -1,6 +1,12 @@
 FROM golang:1.17-alpine3.15
-RUN mkdir /app
-COPY go.mod kubernetes-oauth2-forward.go /app/
 WORKDIR /app
-RUN go build -o main .
-ENTRYPOINT [ "/app/main" ]
+
+COPY go.mod *.go ./
+RUN CGO_ENABLED=0 go build -o forward .
+
+FROM alpine
+RUN adduser -D forward
+USER forward
+WORKDIR /home/forward
+COPY --from=0 /app/forward forward
+ENTRYPOINT [ "./forward" ]

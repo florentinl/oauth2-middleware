@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -82,6 +83,7 @@ func (config Oauth2Config) callback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Mismatching states", http.StatusBadRequest)
 		return
 	} else if err != nil {
+		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -89,12 +91,14 @@ func (config Oauth2Config) callback(w http.ResponseWriter, r *http.Request) {
 
 	tokens, err := config.getTokens(r.FormValue("code"))
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	user, err := config.getUser(tokens)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -102,6 +106,7 @@ func (config Oauth2Config) callback(w http.ResponseWriter, r *http.Request) {
 	// base64 encode the user informations in a signed cookie
 	userInfos, err := json.Marshal(user)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
