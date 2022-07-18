@@ -33,7 +33,7 @@ func clearUserCookie(w http.ResponseWriter) {
 }
 
 func (config Oauth2Config) makeCookie(user string) *http.Cookie {
-	expires := time.Now().Local().Add(time.Hour * 1)
+	expires := time.Now().Local().Add(time.Minute * 5)
 	hash := hmac.New(sha256.New, []byte(config.Secret))
 	hash.Write([]byte(user))
 	hash.Write([]byte(expires.Format(time.UnixDate)))
