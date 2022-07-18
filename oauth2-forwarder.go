@@ -25,6 +25,7 @@ func main() {
 	http.HandleFunc("/_auth/login", config.login)
 	http.HandleFunc("/_auth/callback", config.callback)
 	http.HandleFunc("/_auth/logout", config.logout)
+	http.HandleFunc("/_auth/token", config.token)
 	http.HandleFunc("/_auth/validate", config.validate)
 	fmt.Println("Server started at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

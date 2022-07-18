@@ -113,5 +113,5 @@ func (config Oauth2Config) callback(w http.ResponseWriter, r *http.Request) {
 	userInfos64 := base64.StdEncoding.EncodeToString(userInfos)
 	cookie := config.makeCookie(userInfos64)
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "/_auth/validate", 302)
+	http.Redirect(w, r, "/_auth/token", 302)
 }
