@@ -1,7 +1,7 @@
 FROM golang:1.18-alpine3.16
 WORKDIR /app
 
-COPY go.mod *.go ./
+COPY go.mod go.sum *.go ./
 COPY internal ./internal
 RUN CGO_ENABLED=0 go build -o middleware .
 
