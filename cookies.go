@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 )
@@ -28,22 +27,22 @@ func clearUserCookie(w http.ResponseWriter) {
 	http.SetCookie(w, cookie)
 }
 
-func (config Oauth2Config) makeCookie(user string) (*http.Cookie, error) {
+func (config Oauth2Config) makeSession(name string, payload string, maxAge time.Duration) (*http.Cookie, error) {
 	sessionID, err := RandString(40)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
-	err = config.RedisClient.Set(sessionID, user, 5*time.Minute).Err()
+
+	err = config.RedisClient.Set(sessionID, payload, maxAge).Err()
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
+
 	return &http.Cookie{
-		Name:     "_auth_user",
-		Value:    sessionID,
+		Name:     name,
 		Path:     "/",
-		MaxAge:   int((5 * time.Minute).Seconds()),
+		Value:    sessionID,
+		MaxAge:   int((maxAge).Seconds()),
 		HttpOnly: true,
 		Secure:   true,
 	}, nil

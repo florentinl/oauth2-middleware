@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 func (config Oauth2Config) checkState(w http.ResponseWriter, r *http.Request) error {
@@ -111,7 +112,7 @@ func (config Oauth2Config) callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userStr64 := base64.StdEncoding.EncodeToString(userStr)
-	cookie, err := config.makeCookie(userStr64)
+	cookie, err := config.makeSession("_auth_state", userStr64, 5*time.Minute)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
