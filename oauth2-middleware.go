@@ -11,7 +11,7 @@ import (
 
 func main() {
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
 		Password: "",
 		DB:       0,
 	})
@@ -34,9 +34,7 @@ func main() {
 	http.HandleFunc("/_auth/callback", config.callback)
 	http.HandleFunc("/_auth/logout", config.logout)
 	http.HandleFunc("/_auth/validate", config.validate)
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+	http.HandleFunc("/health", config.health)
 	fmt.Println("Server started at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
