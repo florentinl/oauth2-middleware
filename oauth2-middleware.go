@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"github.com/go-redis/redis"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
