@@ -1,11 +1,11 @@
-package main
+package internal
 
 import (
 	"log"
 	"net/http"
 )
 
-func (config Oauth2Config) health(w http.ResponseWriter, r *http.Request) {
+func (config Oauth2Config) Health(w http.ResponseWriter, r *http.Request) {
 	err := config.RedisClient.Ping().Err()
 	if err != nil {
 		log.Println(err)

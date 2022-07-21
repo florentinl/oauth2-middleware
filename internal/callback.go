@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"encoding/base64"
@@ -85,7 +85,7 @@ func (config Oauth2Config) getUser(token Tokens) (User, error) {
 	return user, nil
 }
 
-func (config Oauth2Config) callback(w http.ResponseWriter, r *http.Request) {
+func (config Oauth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 	err := config.checkState(w, r)
 	if err != nil {
 		return

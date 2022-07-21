@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"errors"
@@ -17,7 +17,7 @@ func getSessionID(w http.ResponseWriter, r *http.Request) (string, error) {
 	return cookie.Value, nil
 }
 
-func (config Oauth2Config) validate(w http.ResponseWriter, r *http.Request) {
+func (config Oauth2Config) Validate(w http.ResponseWriter, r *http.Request) {
 	sessionID, err := getSessionID(w, r)
 	if err != nil {
 		return

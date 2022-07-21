@@ -1,11 +1,11 @@
-package main
+package internal
 
 import (
 	"net/http"
 	"net/url"
 )
 
-func (config Oauth2Config) logout(w http.ResponseWriter, r *http.Request) {
+func (config Oauth2Config) Logout(w http.ResponseWriter, r *http.Request) {
 	clearUserCookie(w)
 	redirectLogout := r.FormValue("redirect_logout")
 	parameters := url.Values{

@@ -4,40 +4,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/go-redis/redis"
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/internal"
 
 	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	client := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
-		Password: os.Getenv("REDIS_PASSWORD"),
-		DB:       0,
-	})
+	config := NewConfig()
 
-	config := Oauth2Config{
-		GrantType:        "authorization_code",
-		ResponseType:     "code",
-		Scope:            "default",
-		AuthTokenUri:     "https://auth.viarezo.fr/oauth/token",
-		AuthAuthorizeUri: "https://auth.viarezo.fr/oauth/authorize",
-		AuthAPIUri:       "https://auth.viarezo.fr/api/user/show/me",
-		LogoutUri:        "https://auth.viarezo.fr/logout",
-		ClientId:         os.Getenv("CLIENT_ID"),
-		ClientSecret:     os.Getenv("CLIENT_SECRET"),
-		Secret:           os.Getenv("SECRET"),
-		BaseUri:          os.Getenv("BASE_URI"),
-		RedisClient:      client,
-	}
-
-	http.HandleFunc("/_auth/login", config.login)
-	http.HandleFunc("/_auth/callback", config.callback)
-	http.HandleFunc("/_auth/validate", config.validate)
-	http.HandleFunc("/_auth/logout", config.logout)
-	http.HandleFunc("/health", config.health)
+	http.HandleFunc("/_auth/login", config.Login)
+	http.HandleFunc("/_auth/callback", config.Callback)
+	http.HandleFunc("/_auth/validate", config.Validate)
+	http.HandleFunc("/_auth/logout", config.Logout)
+	http.HandleFunc("/health", config.Health)
 
 	fmt.Println("Server started at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
