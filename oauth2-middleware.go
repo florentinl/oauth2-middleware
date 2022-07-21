@@ -22,21 +22,23 @@ func main() {
 		GrantType:        "authorization_code",
 		ResponseType:     "code",
 		Scope:            "default",
-		ClientId:         os.Getenv("CLIENT_ID"),
-		ClientSecret:     os.Getenv("CLIENT_SECRET"),
-		Secret:           os.Getenv("SECRET"),
-		BaseUri:          os.Getenv("BASE_URI"),
 		AuthTokenUri:     "https://auth.viarezo.fr/oauth/token",
 		AuthAuthorizeUri: "https://auth.viarezo.fr/oauth/authorize",
 		AuthAPIUri:       "https://auth.viarezo.fr/api/user/show/me",
 		LogoutUri:        "https://auth.viarezo.fr/logout",
+		ClientId:         os.Getenv("CLIENT_ID"),
+		ClientSecret:     os.Getenv("CLIENT_SECRET"),
+		Secret:           os.Getenv("SECRET"),
+		BaseUri:          os.Getenv("BASE_URI"),
 		RedisClient:      client,
 	}
+
 	http.HandleFunc("/_auth/login", config.login)
 	http.HandleFunc("/_auth/callback", config.callback)
-	http.HandleFunc("/_auth/logout", config.logout)
 	http.HandleFunc("/_auth/validate", config.validate)
+	http.HandleFunc("/_auth/logout", config.logout)
 	http.HandleFunc("/health", config.health)
+
 	fmt.Println("Server started at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

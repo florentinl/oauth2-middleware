@@ -7,14 +7,14 @@ type Oauth2Config struct {
 	GrantType        string
 	ResponseType     string
 	Scope            string
-	ClientId         string
-	ClientSecret     string
-	Secret           string
-	BaseUri          string
 	AuthTokenUri     string
 	AuthAuthorizeUri string
 	AuthAPIUri       string
 	LogoutUri        string
+	ClientId         string
+	ClientSecret     string
+	Secret           string
+	BaseUri          string
 	RedisClient      *redis.Client
 }
 

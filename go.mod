@@ -1,4 +1,4 @@
-module gitlab.viarezo.fr/viarezo/oauth2-middleware
+module gitlab.viarezo.fr/ViaRezo/oauth2-middleware
 
 go 1.18
 
