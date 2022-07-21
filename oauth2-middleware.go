@@ -5,9 +5,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/go-redis/redis"
 )
 
 func main() {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
 	config := Oauth2Config{
 		GrantType:        "authorization_code",
 		ResponseType:     "code",
@@ -20,13 +28,15 @@ func main() {
 		AuthAuthorizeUri: "https://auth.viarezo.fr/oauth/authorize",
 		AuthAPIUri:       "https://auth.viarezo.fr/api/user/show/me",
 		LogoutUri:        "https://auth.viarezo.fr/logout",
-		StateMap:         map[string]string{},
+		RedisClient:      client,
 	}
 	http.HandleFunc("/_auth/login", config.login)
 	http.HandleFunc("/_auth/callback", config.callback)
 	http.HandleFunc("/_auth/logout", config.logout)
-	http.HandleFunc("/_auth/token", config.token)
 	http.HandleFunc("/_auth/validate", config.validate)
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 	fmt.Println("Server started at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -1,5 +1,7 @@
 package main
 
+import "github.com/go-redis/redis"
+
 // Oauth2 Parameters
 type Oauth2Config struct {
 	GrantType        string
@@ -13,7 +15,7 @@ type Oauth2Config struct {
 	AuthAuthorizeUri string
 	AuthAPIUri       string
 	LogoutUri        string
-	StateMap         map[string]string
+	RedisClient      *redis.Client
 }
 
 // Tokens for a user
