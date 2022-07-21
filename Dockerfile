@@ -1,7 +1,8 @@
-FROM golang:1.17-alpine3.15
+FROM golang:1.18-alpine3.16
 WORKDIR /app
 
 COPY go.mod *.go ./
+COPY internal ./internal
 RUN CGO_ENABLED=0 go build -o middleware .
 
 FROM alpine
