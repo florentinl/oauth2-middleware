@@ -3,7 +3,7 @@ package internal
 import "github.com/go-redis/redis"
 
 // Oauth2 Parameters
-type Oauth2Config struct {
+type OAuth2Config struct {
 	GrantType        string
 	ResponseType     string
 	Scope            string

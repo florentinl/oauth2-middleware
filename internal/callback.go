@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (config Oauth2Config) checkState(w http.ResponseWriter, r *http.Request) error {
+func (config OAuth2Config) checkState(w http.ResponseWriter, r *http.Request) error {
 	cookie, err := r.Cookie("_auth_state")
 	if errors.Is(err, http.ErrNoCookie) {
 		http.Redirect(w, r, "/_auth/login", 302)
@@ -38,7 +38,7 @@ func (config Oauth2Config) checkState(w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
-func (config Oauth2Config) getTokens(code string) (Tokens, error) {
+func (config OAuth2Config) getTokens(code string) (Tokens, error) {
 	parameters := url.Values{
 		"grant_type":    {config.GrantType},
 		"client_id":     {config.ClientId},
@@ -63,7 +63,7 @@ func (config Oauth2Config) getTokens(code string) (Tokens, error) {
 	return token, nil
 }
 
-func (config Oauth2Config) getUser(token Tokens) (User, error) {
+func (config OAuth2Config) getUser(token Tokens) (User, error) {
 	req, err := http.NewRequest("GET", config.AuthAPIUri, nil)
 	if err != nil {
 		return User{}, err
@@ -85,7 +85,7 @@ func (config Oauth2Config) getUser(token Tokens) (User, error) {
 	return user, nil
 }
 
-func (config Oauth2Config) Callback(w http.ResponseWriter, r *http.Request) {
+func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 	err := config.checkState(w, r)
 	if err != nil {
 		return

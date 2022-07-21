@@ -6,14 +6,14 @@ import (
 	"github.com/go-redis/redis"
 )
 
-func NewConfig() Oauth2Config {
+func NewConfig() OAuth2Config {
 	client := redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 	})
 
-	config := Oauth2Config{
+	config := OAuth2Config{
 		GrantType:        "authorization_code",
 		ResponseType:     "code",
 		Scope:            "default",

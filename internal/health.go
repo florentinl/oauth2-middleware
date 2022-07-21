@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (config Oauth2Config) Health(w http.ResponseWriter, r *http.Request) {
+func (config OAuth2Config) Health(w http.ResponseWriter, r *http.Request) {
 	err := config.RedisClient.Ping().Err()
 	if err != nil {
 		log.Println(err)

@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (config Oauth2Config) Login(w http.ResponseWriter, r *http.Request) {
+func (config OAuth2Config) Login(w http.ResponseWriter, r *http.Request) {
 	state, err := RandString(24)
 	if err != nil {
 		log.Println(err)

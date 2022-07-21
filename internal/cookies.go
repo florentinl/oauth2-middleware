@@ -27,7 +27,7 @@ func clearUserCookie(w http.ResponseWriter) {
 	http.SetCookie(w, cookie)
 }
 
-func (config Oauth2Config) makeSession(name string, payload string, maxAge time.Duration) (*http.Cookie, error) {
+func (config OAuth2Config) makeSession(name string, payload string, maxAge time.Duration) (*http.Cookie, error) {
 	sessionID, err := RandString(40)
 	if err != nil {
 		return nil, err
