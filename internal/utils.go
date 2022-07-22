@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"net/http"
+	"strings"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -27,4 +29,14 @@ func StringFromCharset(n int, charset string) (string, error) {
 		b[i] = charset[randIdxInt]
 	}
 	return string(b), nil
+}
+
+func getBaseUri(r *http.Request) string {
+	baseUri := r.Host
+	if strings.Split(baseUri, ":")[0] == "localhost" {
+		baseUri = "http://" + baseUri
+	} else {
+		baseUri = "https://" + baseUri
+	}
+	return baseUri
 }

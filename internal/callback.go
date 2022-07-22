@@ -33,18 +33,19 @@ func (config OAuth2Config) checkState(w http.ResponseWriter, r *http.Request) er
 
 	if r.FormValue("state") != expectedState {
 		http.Error(w, "CSRF validation failed", http.StatusBadRequest)
+		return errors.New("CSRF validation failed")
 	}
 	clearStateCookie(w)
 	return nil
 }
 
-func (config OAuth2Config) getTokens(code string, redirectUri string) (Tokens, error) {
+func (config OAuth2Config) getTokens(code string, baseUri string) (Tokens, error) {
 	parameters := url.Values{
 		"grant_type":    {config.GrantType},
 		"client_id":     {config.ClientId},
 		"client_secret": {config.ClientSecret},
 		"code":          {code},
-		"redirect_uri":  {redirectUri},
+		"redirect_uri":  {baseUri + "/_auth/callback"},
 		"scope":         {config.Scope},
 	}
 	resp, err := http.PostForm(config.AuthTokenUri, parameters)
@@ -91,7 +92,7 @@ func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokens, err := config.getTokens(r.FormValue("code"), r.URL.Host+"/_auth/callback")
+	tokens, err := config.getTokens(r.FormValue("code"), getBaseUri(r))
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -112,7 +113,7 @@ func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userStr64 := base64.StdEncoding.EncodeToString(userStr)
-	cookie, err := config.makeSession("_auth_state", userStr64, 5*time.Minute)
+	cookie, err := config.makeSession("_auth_user", userStr64, 5*time.Minute)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
