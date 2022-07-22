@@ -65,7 +65,7 @@ func (config OAuth2Config) getTokens(code string, baseUri string) (Tokens, error
 }
 
 func (config OAuth2Config) getUser(token Tokens) (User, error) {
-	req, err := http.NewRequest("GET", config.AuthAPIUri, nil)
+	req, err := http.NewRequest("GET", config.AuthUserInfoUri, nil)
 	if err != nil {
 		return User{}, err
 	}

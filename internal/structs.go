@@ -13,7 +13,7 @@ type OAuth2Config struct {
 	Scope            string
 	AuthTokenUri     string
 	AuthAuthorizeUri string
-	AuthAPIUri       string
+	AuthUserInfoUri  string
 	LogoutUri        string
 	ClientId         string
 	ClientSecret     string
