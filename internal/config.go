@@ -24,7 +24,6 @@ func NewConfig() OAuth2Config {
 		ClientId:         os.Getenv("CLIENT_ID"),
 		ClientSecret:     os.Getenv("CLIENT_SECRET"),
 		Secret:           os.Getenv("SECRET"),
-		BaseUri:          os.Getenv("BASE_URI"),
 		RedisClient:      client,
 	}
 

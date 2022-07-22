@@ -22,10 +22,12 @@ func (config OAuth2Config) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	baseUri := r.URL.Host
+
 	parameters := url.Values{
 		"response_type": {config.ResponseType},
 		"client_id":     {config.ClientId},
-		"redirect_uri":  {config.BaseUri + "/_auth/callback"},
+		"redirect_uri":  {baseUri + "/_auth/callback"},
 		"scope":         {config.Scope},
 		"state":         {state},
 	}

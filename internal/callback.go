@@ -38,13 +38,13 @@ func (config OAuth2Config) checkState(w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
-func (config OAuth2Config) getTokens(code string) (Tokens, error) {
+func (config OAuth2Config) getTokens(code string, redirectUri string) (Tokens, error) {
 	parameters := url.Values{
 		"grant_type":    {config.GrantType},
 		"client_id":     {config.ClientId},
 		"client_secret": {config.ClientSecret},
 		"code":          {code},
-		"redirect_uri":  {config.BaseUri + "/_auth/callback"},
+		"redirect_uri":  {redirectUri},
 		"scope":         {config.Scope},
 	}
 	resp, err := http.PostForm(config.AuthTokenUri, parameters)
@@ -91,7 +91,7 @@ func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokens, err := config.getTokens(r.FormValue("code"))
+	tokens, err := config.getTokens(r.FormValue("code"), r.URL.Host+"/_auth/callback")
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

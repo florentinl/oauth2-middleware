@@ -14,7 +14,6 @@ type OAuth2Config struct {
 	ClientId         string
 	ClientSecret     string
 	Secret           string
-	BaseUri          string
 	RedisClient      *redis.Client
 }
 
