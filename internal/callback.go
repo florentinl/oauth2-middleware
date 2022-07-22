@@ -121,5 +121,5 @@ func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "https://"+r.URL.Host+"/validate", 302)
+	http.Redirect(w, r, "https://"+r.URL.Host+"/", 302)
 }

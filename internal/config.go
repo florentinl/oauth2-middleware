@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"log"
 	"os"
 
 	"github.com/go-redis/redis/v8"
@@ -31,6 +32,8 @@ func NewConfig() OAuth2Config {
 		RedisClient:      client,
 		RedisContext:     ctx,
 	}
+
+	log.Println("[INFO] OAuth2Config:", config)
 
 	return config
 }
