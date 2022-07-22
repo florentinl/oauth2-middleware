@@ -2,8 +2,11 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -18,6 +21,31 @@ func NewConfig() OAuth2Config {
 		DB:               0,
 	})
 
+	// Parse Config File as JSON
+	file, err := ioutil.ReadFile("config.json")
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+
+	configFile := ConfigFile{}
+	err = json.Unmarshal(file, &configFile)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+
+	oauth2Clients := make(map[string]*OAuth2Client)
+	for _, clientConfig := range configFile.Configuration {
+		client := OAuth2Client{
+			ClientId:     os.Getenv(strings.ToUpper(clientConfig.Name) + "_CLIENT_ID"),
+			ClientSecret: os.Getenv(strings.ToUpper(clientConfig.Name) + "_CLIENT_SECRET"),
+		}
+		for _, host := range clientConfig.Hosts {
+			oauth2Clients[host] = &client
+		}
+	}
+
 	config := OAuth2Config{
 		GrantType:        "authorization_code",
 		ResponseType:     "code",
@@ -26,8 +54,7 @@ func NewConfig() OAuth2Config {
 		AuthAuthorizeUri: os.Getenv("OAUTH_AUTHORIZE_URI"),
 		AuthUserInfoUri:  os.Getenv("OAUTH_USERINFO_URI"),
 		LogoutUri:        os.Getenv("OAUTH_LOGOUT_URI"),
-		ClientId:         os.Getenv("CLIENT_ID"),
-		ClientSecret:     os.Getenv("CLIENT_SECRET"),
+		OAuth2Clients:    oauth2Clients,
 		Secret:           os.Getenv("SECRET"),
 		RedisClient:      client,
 		RedisContext:     ctx,
