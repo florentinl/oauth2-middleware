@@ -8,12 +8,6 @@ import (
 )
 
 func NewConfig() OAuth2Config {
-	// client := redis.NewClient(&redis.Options{
-	// 	Addr:     os.Getenv("REDIS_HOST"),
-	// 	Password: os.Getenv("REDIS_PASSWORD"),
-	// 	DB:       0,
-	// })
-
 	ctx := context.Background()
 	client := redis.NewFailoverClient(&redis.FailoverOptions{
 		MasterName:       "master",
