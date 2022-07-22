@@ -8,7 +8,7 @@ import (
 func getSessionID(w http.ResponseWriter, r *http.Request) (string, error) {
 	cookie, err := r.Cookie("_auth_user")
 	if errors.Is(err, http.ErrNoCookie) {
-		http.Redirect(w, r, "https://"+getBaseUri(r)+"/_auth/login", 302)
+		http.Redirect(w, r, "https://"+r.URL.Host+"/login", 302)
 		return "", err
 	} else if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -23,10 +23,10 @@ func (config OAuth2Config) Validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := config.RedisClient.Get(sessionID).Result()
+	user, err := config.RedisClient.Get(config.RedisContext, sessionID).Result()
 	if err != nil {
 		clearUserCookie(w)
-		http.Redirect(w, r, "https://"+getBaseUri(r)+"/_auth/login", 302)
+		http.Redirect(w, r, "https://"+r.URL.Host+"/login", 302)
 		return
 	}
 

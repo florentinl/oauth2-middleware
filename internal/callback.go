@@ -13,7 +13,7 @@ import (
 func (config OAuth2Config) checkState(w http.ResponseWriter, r *http.Request) error {
 	cookie, err := r.Cookie("_auth_state")
 	if errors.Is(err, http.ErrNoCookie) {
-		http.Redirect(w, r, "/_auth/login", 302)
+		http.Redirect(w, r, "/login", 302)
 		return err
 	}
 	if err != nil {
@@ -23,11 +23,11 @@ func (config OAuth2Config) checkState(w http.ResponseWriter, r *http.Request) er
 	}
 
 	sessionID := cookie.Value
-	expectedState, err := config.RedisClient.Get(sessionID).Result()
+	expectedState, err := config.RedisClient.Get(config.RedisContext, sessionID).Result()
 	if err != nil {
 		log.Println(err)
 		clearStateCookie(w)
-		http.Redirect(w, r, "/_auth/login", 302)
+		http.Redirect(w, r, "/login", 302)
 		return err
 	}
 
@@ -45,7 +45,7 @@ func (config OAuth2Config) getTokens(code string, baseUri string) (Tokens, error
 		"client_id":     {config.ClientId},
 		"client_secret": {config.ClientSecret},
 		"code":          {code},
-		"redirect_uri":  {baseUri + "/_auth/callback"},
+		"redirect_uri":  {baseUri + "/callback"},
 		"scope":         {config.Scope},
 	}
 	resp, err := http.PostForm(config.AuthTokenUri, parameters)
@@ -92,7 +92,7 @@ func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokens, err := config.getTokens(r.FormValue("code"), getBaseUri(r))
+	tokens, err := config.getTokens(r.FormValue("code"), "https://"+r.URL.Host)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -121,5 +121,5 @@ func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "/_auth/validate", 302)
+	http.Redirect(w, r, "https://"+r.URL.Host+"/validate", 302)
 }

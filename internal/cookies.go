@@ -33,7 +33,7 @@ func (config OAuth2Config) makeSession(name string, payload string, maxAge time.
 		return nil, err
 	}
 
-	err = config.RedisClient.Set(sessionID, payload, maxAge).Err()
+	err = config.RedisClient.Set(config.RedisContext, sessionID, payload, maxAge).Err()
 	if err != nil {
 		return nil, err
 	}

@@ -1,16 +1,26 @@
 package internal
 
 import (
+	"context"
 	"os"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 )
 
 func NewConfig() OAuth2Config {
-	client := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
-		Password: os.Getenv("REDIS_PASSWORD"),
-		DB:       0,
+	// client := redis.NewClient(&redis.Options{
+	// 	Addr:     os.Getenv("REDIS_HOST"),
+	// 	Password: os.Getenv("REDIS_PASSWORD"),
+	// 	DB:       0,
+	// })
+
+	ctx := context.Background()
+	client := redis.NewFailoverClient(&redis.FailoverOptions{
+		MasterName:       "master",
+		SentinelAddrs:    []string{os.Getenv("REDIS_HOST") + ":26379"},
+		Password:         os.Getenv("REDIS_PASSWORD"),
+		SentinelPassword: os.Getenv("REDIS_PASSWORD"),
+		DB:               0,
 	})
 
 	config := OAuth2Config{
@@ -25,6 +35,7 @@ func NewConfig() OAuth2Config {
 		ClientSecret:     os.Getenv("CLIENT_SECRET"),
 		Secret:           os.Getenv("SECRET"),
 		RedisClient:      client,
+		RedisContext:     ctx,
 	}
 
 	return config

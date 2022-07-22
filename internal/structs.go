@@ -1,6 +1,10 @@
 package internal
 
-import "github.com/go-redis/redis"
+import (
+	"context"
+
+	"github.com/go-redis/redis/v8"
+)
 
 // Oauth2 Parameters
 type OAuth2Config struct {
@@ -15,6 +19,7 @@ type OAuth2Config struct {
 	ClientSecret     string
 	Secret           string
 	RedisClient      *redis.Client
+	RedisContext     context.Context
 }
 
 // Tokens for a user

@@ -25,7 +25,7 @@ func (config OAuth2Config) Login(w http.ResponseWriter, r *http.Request) {
 	parameters := url.Values{
 		"response_type": {config.ResponseType},
 		"client_id":     {config.ClientId},
-		"redirect_uri":  {getBaseUri(r) + "/_auth/callback"},
+		"redirect_uri":  {"https://" + r.URL.Host + "/callback"},
 		"scope":         {config.Scope},
 		"state":         {state},
 	}

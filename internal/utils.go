@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
-	"net/http"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -28,8 +27,4 @@ func StringFromCharset(n int, charset string) (string, error) {
 		b[i] = charset[randIdxInt]
 	}
 	return string(b), nil
-}
-
-func getBaseUri(r *http.Request) string {
-	return r.Header["X-Forwarded-Host"][0]
 }
