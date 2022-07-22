@@ -6,7 +6,19 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// Oauth2 Parameters
+// Structure of the config file
+type ConfigFragment struct {
+	Name  string   `json:"name"`
+	Hosts []string `json:"hosts"`
+}
+
+// OAuth2 Client and Secret pair
+type OAuth2Client struct {
+	ClientId     string
+	ClientSecret string
+}
+
+// OAuth2 Parameters
 type OAuth2Config struct {
 	GrantType        string
 	ResponseType     string
@@ -15,8 +27,7 @@ type OAuth2Config struct {
 	AuthAuthorizeUri string
 	AuthUserInfoUri  string
 	LogoutUri        string
-	ClientId         string
-	ClientSecret     string
+	OAuth2Clients    map[string]*OAuth2Client
 	Secret           string
 	RedisClient      *redis.Client
 	RedisContext     context.Context
