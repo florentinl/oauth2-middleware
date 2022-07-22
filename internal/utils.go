@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"strings"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -32,11 +31,5 @@ func StringFromCharset(n int, charset string) (string, error) {
 }
 
 func getBaseUri(r *http.Request) string {
-	baseUri := r.Host
-	if strings.Split(baseUri, ":")[0] == "localhost" {
-		baseUri = "http://" + baseUri
-	} else {
-		baseUri = "https://" + baseUri
-	}
-	return baseUri
+	return r.Header["X-Forwarded-Host"][0]
 }
