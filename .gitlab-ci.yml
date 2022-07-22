@@ -10,7 +10,7 @@
       /kaniko/executor
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-      --destination "${REGISTRY_ENDPOINT}/library/oauth-middleware:${TAG}"
+      --destination "${REGISTRY_ENDPOINT}/traefik-forward-oauth/oauth-middleware:${TAG}"
       --cache
 
 build-prod:
