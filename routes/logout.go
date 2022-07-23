@@ -8,6 +8,7 @@ import (
 )
 
 func Logout(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
+	DeleteSession(config.RedisClient, config.RedisContext, r)
 	ClearUserCookie(w)
 	redirectLogout := r.FormValue("redirect_logout")
 	parameters := url.Values{

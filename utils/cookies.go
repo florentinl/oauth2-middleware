@@ -13,7 +13,7 @@ func ClearStateCookie(w http.ResponseWriter) {
 		Name:     "_auth_state",
 		Value:    "",
 		Path:     "/",
-		MaxAge:   -1,
+		MaxAge:   -int(24 * time.Hour.Seconds()),
 		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
@@ -24,10 +24,18 @@ func ClearUserCookie(w http.ResponseWriter) {
 		Name:     "_auth_user",
 		Value:    "",
 		Path:     "/",
-		MaxAge:   -1,
+		MaxAge:   -int(24 * time.Hour.Seconds()),
 		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
+}
+
+func DeleteSession(redisClient *redis.Client, redisContext context.Context, r *http.Request) error {
+	cookie, err := r.Cookie("_auth_user")
+	if err != nil {
+		return err
+	}
+	return redisClient.Del(redisContext, cookie.Value).Err()
 }
 
 func MakeSession(name string, payload string, maxAge time.Duration, redisClient *redis.Client, redisContext context.Context) (*http.Cookie, error) {
