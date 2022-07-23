@@ -9,11 +9,12 @@ import (
 )
 
 func Login(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
-	state, err := RandString(24)
+	randString, err := RandString(24)
 	if err != nil {
 		InternalServerError(w, err)
 		return
 	}
+	state := randString + ":generic-oauth:" + r.FormValue("redirect_login")
 
 	cookie, err := MakeSession("_auth_state", state, 5*time.Minute, config.RedisClient, config.RedisContext)
 	if err != nil {
@@ -22,12 +23,11 @@ func Login(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
 	}
 
 	parameters := url.Values{
-		"response_type":  {config.ResponseType},
-		"client_id":      {config.OAuth2Clients[r.URL.Host].ClientId},
-		"redirect_uri":   {"https://" + r.URL.Host + "/_callback"},
-		"scope":          {config.Scope},
-		"state":          {state},
-		"redirect_login": {r.FormValue("redirect_login")},
+		"response_type": {config.ResponseType},
+		"client_id":     {config.OAuth2Clients[r.URL.Host].ClientId},
+		"redirect_uri":  {"https://" + r.URL.Host + "/_callback"},
+		"scope":         {config.Scope},
+		"state":         {state},
 	}
 
 	http.SetCookie(w, cookie)

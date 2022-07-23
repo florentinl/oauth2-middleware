@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -120,5 +121,5 @@ func Callback(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, r.FormValue("redirect_login"), 302)
+	http.Redirect(w, r, strings.Join(strings.Split(r.FormValue("state"), ":")[2:], ":"), 302)
 }
