@@ -120,5 +120,5 @@ func Callback(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, cookie)
-	http.Redirect(w, r, "https://"+r.URL.Host+"/", 302)
+	http.Redirect(w, r, r.FormValue("redirect_login"), 302)
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 var CSRFError = errors.New("CSRF validation failed")
@@ -14,5 +15,8 @@ func InternalServerError(w http.ResponseWriter, err error) {
 }
 
 func RedirectLogin(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "https://"+r.URL.Host+"/_login", 302)
+	parameters := url.Values{
+		"redirect_login": {r.URL.String()},
+	}
+	http.Redirect(w, r, "https://"+r.URL.Host+"/_login?"+parameters.Encode(), 302)
 }
