@@ -4,42 +4,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
-	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/internal"
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/routes"
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/utils"
 
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func substituteXHeaders(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/_health" {
-			next.ServeHTTP(w, r)
-			return
-		}
-		if r.Header.Get("X-Forwarded-Host") != "" {
-			r.URL.Host = r.Header.Get("X-Forwarded-Host")
-			forwardedUri := strings.Split(r.Header.Get("X-Forwarded-Uri"), "?")
-			r.URL.Path = forwardedUri[0]
-			if len(forwardedUri) > 1 {
-				r.URL.RawQuery = forwardedUri[1]
-			}
-			r.Form = r.URL.Query()
-		}
-		next.ServeHTTP(w, r)
-	})
-}
-
 func main() {
 	config := NewConfig()
 
-	http.HandleFunc("/", config.Validate)
-	http.HandleFunc("/_login", config.Login)
-	http.HandleFunc("/_callback", config.Callback)
-	http.HandleFunc("/_logout", config.Logout)
-	http.HandleFunc("/_health", config.Health)
+	http.HandleFunc("/", ValidateHandler(config))
+	http.HandleFunc("/_login", LoginHandler(config))
+	http.HandleFunc("/_callback", CallbackHandler(config))
+	http.HandleFunc("/_logout", LogoutHandler(config))
+	http.HandleFunc("/_health", HealthHandler(config))
 
-	xSubstMux := substituteXHeaders(http.DefaultServeMux)
+	xSubstMux := SubstituteXHeaders(http.DefaultServeMux)
 
 	fmt.Println("Server started at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", xSubstMux))

@@ -1,11 +1,13 @@
-package internal
+package routes
 
 import (
 	"log"
 	"net/http"
+
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/utils"
 )
 
-func (config OAuth2Config) Health(w http.ResponseWriter, r *http.Request) {
+func Health(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
 	err := config.RedisClient.Ping(config.RedisContext).Err()
 	if err != nil {
 		log.Println(err)

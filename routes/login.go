@@ -1,14 +1,14 @@
-package internal
+package routes
 
 import (
 	"net/http"
 	"net/url"
 	"time"
 
-	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/internal/utils"
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/utils"
 )
 
-func (config OAuth2Config) Login(w http.ResponseWriter, r *http.Request) {
+func Login(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
 	state, err := RandString(24)
 	if err != nil {
 		InternalServerError(w, err)

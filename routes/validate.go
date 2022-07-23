@@ -1,9 +1,9 @@
-package internal
+package routes
 
 import (
 	"net/http"
 
-	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/internal/utils"
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/utils"
 )
 
 func getSessionID(w http.ResponseWriter, r *http.Request) (string, error) {
@@ -14,7 +14,7 @@ func getSessionID(w http.ResponseWriter, r *http.Request) (string, error) {
 	return cookie.Value, nil
 }
 
-func (config OAuth2Config) Validate(w http.ResponseWriter, r *http.Request) {
+func Validate(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
 	sessionID, err := getSessionID(w, r)
 	switch err {
 	case nil:

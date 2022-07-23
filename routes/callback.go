@@ -1,6 +1,7 @@
-package internal
+package routes
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -9,17 +10,17 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/internal/utils"
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/utils"
 )
 
-func (config OAuth2Config) checkState(w http.ResponseWriter, r *http.Request) error {
+func checkState(r *http.Request, redisClient *redis.Client, redisContext context.Context) error {
 	cookie, err := r.Cookie("_auth_state")
 	if err != nil {
 		return err
 	}
 
 	sessionID := cookie.Value
-	expectedState, err := config.RedisClient.Get(config.RedisContext, sessionID).Result()
+	expectedState, err := redisClient.Get(redisContext, sessionID).Result()
 	if err != nil {
 		return err
 	}
@@ -30,13 +31,13 @@ func (config OAuth2Config) checkState(w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
-func (config OAuth2Config) getTokens(code string, host string) (Tokens, error) {
+func getTokens(config OAuth2Config, code string, host string) (Tokens, error) {
 	parameters := url.Values{
 		"grant_type":    {config.GrantType},
 		"client_id":     {config.OAuth2Clients[host].ClientId},
 		"client_secret": {config.OAuth2Clients[host].ClientSecret},
 		"code":          {code},
-		"redirect_uri":  {"https://" + host + "/callback"},
+		"redirect_uri":  {"https://" + host + "/_callback"},
 		"scope":         {config.Scope},
 	}
 	resp, err := http.PostForm(config.AuthTokenUri, parameters)
@@ -55,8 +56,8 @@ func (config OAuth2Config) getTokens(code string, host string) (Tokens, error) {
 	return token, nil
 }
 
-func (config OAuth2Config) getUser(token Tokens) (User, error) {
-	req, err := http.NewRequest("GET", config.AuthUserInfoUri, nil)
+func getUser(token Tokens, authUserInfoUri string) (User, error) {
+	req, err := http.NewRequest("GET", authUserInfoUri, nil)
 	if err != nil {
 		return User{}, err
 	}
@@ -77,11 +78,10 @@ func (config OAuth2Config) getUser(token Tokens) (User, error) {
 	return user, nil
 }
 
-func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
-	err := config.checkState(w, r)
+func Callback(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
+	err := checkState(r, config.RedisClient, config.RedisContext)
 	switch err {
 	case http.ErrNoCookie, redis.Nil:
-		ClearStateCookie(w)
 		RedirectLogin(w, r)
 		return
 	case CSRFError:
@@ -95,13 +95,13 @@ func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 	ClearStateCookie(w)
 
-	tokens, err := config.getTokens(r.FormValue("code"), r.URL.Host)
+	tokens, err := getTokens(config, r.FormValue("code"), r.URL.Host)
 	if err != nil {
 		InternalServerError(w, err)
 		return
 	}
 
-	user, err := config.getUser(tokens)
+	user, err := getUser(tokens, config.AuthUserInfoUri)
 	if err != nil {
 		InternalServerError(w, err)
 		return
