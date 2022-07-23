@@ -30,10 +30,10 @@ func main() {
 	config := NewConfig()
 
 	http.HandleFunc("/", config.Validate)
-	http.HandleFunc("/login", config.Login)
-	http.HandleFunc("/callback", config.Callback)
+	http.HandleFunc("/_login", config.Login)
+	http.HandleFunc("/_callback", config.Callback)
 	http.HandleFunc("/_logout", config.Logout)
-	http.HandleFunc("/health", config.Health)
+	http.HandleFunc("/_health", config.Health)
 
 	xSubstMux := substituteXHeaders(http.DefaultServeMux)
 

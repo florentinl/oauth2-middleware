@@ -4,38 +4,28 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 func (config OAuth2Config) checkState(w http.ResponseWriter, r *http.Request) error {
 	cookie, err := r.Cookie("_auth_state")
-	if errors.Is(err, http.ErrNoCookie) {
-		http.Redirect(w, r, "/login", 302)
-		return err
-	}
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return err
 	}
 
 	sessionID := cookie.Value
 	expectedState, err := config.RedisClient.Get(config.RedisContext, sessionID).Result()
 	if err != nil {
-		log.Println(err)
-		clearStateCookie(w)
-		http.Redirect(w, r, "/login", 302)
 		return err
 	}
 
 	if r.FormValue("state") != expectedState {
-		http.Error(w, "CSRF validation failed", http.StatusBadRequest)
-		return errors.New("CSRF validation failed")
+		return CSRFError
 	}
-	clearStateCookie(w)
 	return nil
 }
 
@@ -88,35 +78,43 @@ func (config OAuth2Config) getUser(token Tokens) (User, error) {
 
 func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 	err := config.checkState(w, r)
-	if err != nil {
+	switch err {
+	case http.ErrNoCookie, redis.Nil:
+		clearStateCookie(w)
+		redirectLogin(w, r)
+		return
+	case CSRFError:
+		http.Error(w, "CSRF validation failed", http.StatusForbidden)
+		return
+	case nil:
+		break
+	default:
+		internalServerError(w, err)
 		return
 	}
+	clearStateCookie(w)
 
 	tokens, err := config.getTokens(r.FormValue("code"), r.URL.Host)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		internalServerError(w, err)
 		return
 	}
 
 	user, err := config.getUser(tokens)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		internalServerError(w, err)
 		return
 	}
 
 	userStr, err := json.Marshal(user)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		internalServerError(w, err)
 		return
 	}
 	userStr64 := base64.StdEncoding.EncodeToString(userStr)
 	cookie, err := config.makeSession("_auth_user", userStr64, 5*time.Minute)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		internalServerError(w, err)
 		return
 	}
 

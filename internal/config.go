@@ -11,28 +11,17 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func NewConfig() OAuth2Config {
-	ctx := context.Background()
-	client := redis.NewFailoverClient(&redis.FailoverOptions{
-		MasterName:       "master",
-		SentinelAddrs:    []string{os.Getenv("REDIS_HOST") + ":26379"},
-		Password:         os.Getenv("REDIS_PASSWORD"),
-		SentinelPassword: os.Getenv("REDIS_PASSWORD"),
-		DB:               0,
-	})
-
+func getClients() (map[string]*OAuth2Client, error) {
 	// Parse Config File as JSON
 	file, err := ioutil.ReadFile("config.json")
 	if err != nil {
-		log.Println(err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	configFragments := []ConfigFragment{}
 	err = json.Unmarshal(file, &configFragments)
 	if err != nil {
-		log.Println(err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	oauth2Clients := make(map[string]*OAuth2Client)
@@ -44,6 +33,23 @@ func NewConfig() OAuth2Config {
 		for _, host := range clientConfig.Hosts {
 			oauth2Clients[host] = &client
 		}
+	}
+	return oauth2Clients, nil
+}
+
+func NewConfig() OAuth2Config {
+	ctx := context.Background()
+	client := redis.NewFailoverClient(&redis.FailoverOptions{
+		MasterName:       "master",
+		SentinelAddrs:    []string{os.Getenv("REDIS_HOST") + ":26379"},
+		Password:         os.Getenv("REDIS_PASSWORD"),
+		SentinelPassword: os.Getenv("REDIS_PASSWORD"),
+		DB:               0,
+	})
+
+	oauth2Clients, err := getClients()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	config := OAuth2Config{
@@ -59,8 +65,6 @@ func NewConfig() OAuth2Config {
 		RedisClient:      client,
 		RedisContext:     ctx,
 	}
-
-	log.Println("[INFO] OAuth2Config:", config)
 
 	return config
 }
