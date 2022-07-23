@@ -1,11 +1,14 @@
-package internal
+package utils
 
 import (
+	"context"
 	"net/http"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
-func clearStateCookie(w http.ResponseWriter) {
+func ClearStateCookie(w http.ResponseWriter) {
 	cookie := &http.Cookie{
 		Name:     "_auth_state",
 		Value:    "",
@@ -16,7 +19,7 @@ func clearStateCookie(w http.ResponseWriter) {
 	http.SetCookie(w, cookie)
 }
 
-func clearUserCookie(w http.ResponseWriter) {
+func ClearUserCookie(w http.ResponseWriter) {
 	cookie := &http.Cookie{
 		Name:     "_auth_user",
 		Value:    "",
@@ -27,13 +30,13 @@ func clearUserCookie(w http.ResponseWriter) {
 	http.SetCookie(w, cookie)
 }
 
-func (config OAuth2Config) makeSession(name string, payload string, maxAge time.Duration) (*http.Cookie, error) {
+func MakeSession(name string, payload string, maxAge time.Duration, redisClient *redis.Client, redisContext context.Context) (*http.Cookie, error) {
 	sessionID, err := RandString(40)
 	if err != nil {
 		return nil, err
 	}
 
-	err = config.RedisClient.Set(config.RedisContext, sessionID, payload, maxAge).Err()
+	err = redisClient.Set(redisContext, sessionID, payload, maxAge).Err()
 	if err != nil {
 		return nil, err
 	}

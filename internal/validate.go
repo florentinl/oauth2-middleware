@@ -2,6 +2,8 @@ package internal
 
 import (
 	"net/http"
+
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/internal/utils"
 )
 
 func getSessionID(w http.ResponseWriter, r *http.Request) (string, error) {
@@ -18,16 +20,16 @@ func (config OAuth2Config) Validate(w http.ResponseWriter, r *http.Request) {
 	case nil:
 		break
 	case http.ErrNoCookie:
-		redirectLogin(w, r)
+		RedirectLogin(w, r)
 		return
 	default:
-		internalServerError(w, err)
+		InternalServerError(w, err)
 	}
 
 	user, err := config.RedisClient.Get(config.RedisContext, sessionID).Result()
 	if err != nil {
-		clearUserCookie(w)
-		redirectLogin(w, r)
+		ClearUserCookie(w)
+		RedirectLogin(w, r)
 		return
 	}
 

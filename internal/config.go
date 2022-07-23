@@ -11,8 +11,21 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+// OAuth2 Parameters
+type OAuth2Config struct {
+	GrantType        string
+	ResponseType     string
+	Scope            string
+	AuthTokenUri     string
+	AuthAuthorizeUri string
+	AuthUserInfoUri  string
+	LogoutUri        string
+	OAuth2Clients    map[string]*OAuth2Client
+	RedisClient      *redis.Client
+	RedisContext     context.Context
+}
+
 func getClients() (map[string]*OAuth2Client, error) {
-	// Parse Config File as JSON
 	file, err := ioutil.ReadFile("config.json")
 	if err != nil {
 		return nil, err
@@ -61,7 +74,6 @@ func NewConfig() OAuth2Config {
 		AuthUserInfoUri:  os.Getenv("OAUTH_USERINFO_URI"),
 		LogoutUri:        os.Getenv("OAUTH_LOGOUT_URI"),
 		OAuth2Clients:    oauth2Clients,
-		Secret:           os.Getenv("SECRET"),
 		RedisClient:      client,
 		RedisContext:     ctx,
 	}

@@ -4,18 +4,20 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/internal/utils"
 )
 
 func (config OAuth2Config) Login(w http.ResponseWriter, r *http.Request) {
 	state, err := RandString(24)
 	if err != nil {
-		internalServerError(w, err)
+		InternalServerError(w, err)
 		return
 	}
 
-	cookie, err := config.makeSession("_auth_state", state, 5*time.Minute)
+	cookie, err := MakeSession("_auth_state", state, 5*time.Minute, config.RedisClient, config.RedisContext)
 	if err != nil {
-		internalServerError(w, err)
+		InternalServerError(w, err)
 		return
 	}
 

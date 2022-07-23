@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/internal/utils"
 )
 
 func (config OAuth2Config) checkState(w http.ResponseWriter, r *http.Request) error {
@@ -80,8 +81,8 @@ func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 	err := config.checkState(w, r)
 	switch err {
 	case http.ErrNoCookie, redis.Nil:
-		clearStateCookie(w)
-		redirectLogin(w, r)
+		ClearStateCookie(w)
+		RedirectLogin(w, r)
 		return
 	case CSRFError:
 		http.Error(w, "CSRF validation failed", http.StatusForbidden)
@@ -89,32 +90,32 @@ func (config OAuth2Config) Callback(w http.ResponseWriter, r *http.Request) {
 	case nil:
 		break
 	default:
-		internalServerError(w, err)
+		InternalServerError(w, err)
 		return
 	}
-	clearStateCookie(w)
+	ClearStateCookie(w)
 
 	tokens, err := config.getTokens(r.FormValue("code"), r.URL.Host)
 	if err != nil {
-		internalServerError(w, err)
+		InternalServerError(w, err)
 		return
 	}
 
 	user, err := config.getUser(tokens)
 	if err != nil {
-		internalServerError(w, err)
+		InternalServerError(w, err)
 		return
 	}
 
 	userStr, err := json.Marshal(user)
 	if err != nil {
-		internalServerError(w, err)
+		InternalServerError(w, err)
 		return
 	}
 	userStr64 := base64.StdEncoding.EncodeToString(userStr)
-	cookie, err := config.makeSession("_auth_user", userStr64, 5*time.Minute)
+	cookie, err := MakeSession("_auth_user", userStr64, 5*time.Minute, config.RedisClient, config.RedisContext)
 	if err != nil {
-		internalServerError(w, err)
+		InternalServerError(w, err)
 		return
 	}
 

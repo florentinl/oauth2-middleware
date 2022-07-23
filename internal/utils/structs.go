@@ -1,10 +1,4 @@
-package internal
-
-import (
-	"context"
-
-	"github.com/go-redis/redis/v8"
-)
+package utils
 
 // Structure of the config file
 type ConfigFragment struct {
@@ -16,21 +10,6 @@ type ConfigFragment struct {
 type OAuth2Client struct {
 	ClientId     string
 	ClientSecret string
-}
-
-// OAuth2 Parameters
-type OAuth2Config struct {
-	GrantType        string
-	ResponseType     string
-	Scope            string
-	AuthTokenUri     string
-	AuthAuthorizeUri string
-	AuthUserInfoUri  string
-	LogoutUri        string
-	OAuth2Clients    map[string]*OAuth2Client
-	Secret           string
-	RedisClient      *redis.Client
-	RedisContext     context.Context
 }
 
 // Tokens for a user
