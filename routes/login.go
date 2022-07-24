@@ -16,7 +16,7 @@ func Login(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
 	}
 	state := randString + ":generic-oauth:" + r.FormValue("redirect_login")
 
-	cookie, err := MakeSession("_auth_state", state, 5*time.Minute, config.RedisClient, config.RedisContext)
+	cookie, err := MakeCookie("_auth_state", state, 5*time.Minute, config.RedisClient, config.RedisContext)
 	if err != nil {
 		InternalServerError(w, err)
 		return

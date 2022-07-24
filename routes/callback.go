@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/go-redis/redis/v8"
 	. "gitlab.viarezo.fr/ViaRezo/oauth2-middleware/utils"
@@ -114,7 +113,7 @@ func Callback(config OAuth2Config, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userStr64 := base64.StdEncoding.EncodeToString(userStr)
-	cookie, err := MakeSession("_auth_user", userStr64, 5*time.Minute, config.RedisClient, config.RedisContext)
+	cookie, err := MakeSession("_auth_user", userStr64, config.RedisClient, config.RedisContext)
 	if err != nil {
 		InternalServerError(w, err)
 		return

@@ -38,7 +38,7 @@ func DeleteSession(redisClient *redis.Client, redisContext context.Context, r *h
 	return redisClient.Del(redisContext, cookie.Value).Err()
 }
 
-func MakeSession(name string, payload string, maxAge time.Duration, redisClient *redis.Client, redisContext context.Context) (*http.Cookie, error) {
+func MakeCookie(name string, payload string, maxAge time.Duration, redisClient *redis.Client, redisContext context.Context) (*http.Cookie, error) {
 	sessionID, err := RandString(40)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,27 @@ func MakeSession(name string, payload string, maxAge time.Duration, redisClient 
 		Name:     name,
 		Path:     "/",
 		Value:    sessionID,
-		MaxAge:   int((maxAge).Seconds()),
+		MaxAge:   int(maxAge.Seconds()),
+		HttpOnly: true,
+		Secure:   true,
+	}, nil
+}
+
+func MakeSession(name string, payload string, redisClient *redis.Client, redisContext context.Context) (*http.Cookie, error) {
+	sessionID, err := RandString(40)
+	if err != nil {
+		return nil, err
+	}
+
+	err = redisClient.Set(redisContext, sessionID, payload, 24*time.Hour).Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return &http.Cookie{
+		Name:     name,
+		Path:     "/",
+		Value:    sessionID,
 		HttpOnly: true,
 		Secure:   true,
 	}, nil
